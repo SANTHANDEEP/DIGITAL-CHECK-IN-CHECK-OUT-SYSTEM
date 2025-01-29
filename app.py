@@ -6,7 +6,7 @@ from datetime import datetime
 app = Flask(__name__)
 
 # MongoDB connection
-client = MongoClient("mongodb+srv://saikrishnajayanth2020:jayanth@cluster0.fheg17w.mongodb.net/")
+client = MongoClient("mongodb-your respected link")
 db = client["Project"]
 collection = db["Students"]
 
