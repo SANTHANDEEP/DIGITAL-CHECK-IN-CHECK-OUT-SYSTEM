@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID Card Reader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <label for="regNoInput">Registration Number:</label>
+    <input type="text" id="regNoInput" />
+    <button onclick="readRFID()">Read RFID</button>
+    <div id="studentDetails"></div>
+    <button onclick="updateDetails('check_out')">Check-out</button>
+    <button onclick="updateDetails('check_in')">Check-in</button>
+    <div id="updateMessage"></div>
+
+    <!-- Same as the previous code -->
+
+<!-- ... Previous HTML code ... -->
+
+<script>
+
+    async function readRFID() {
+        const regNoInput = document.getElementById("regNoInput").value;
+        const response = await fetch(`/api/students?reg_no=${regNoInput}`);
+        const data = await response.json();
+
+        if (data.error) {
+            alert(data.error);
+        } else {
+            const studentDetails = document.getElementById("studentDetails");
+            studentDetails.innerHTML = `
+                <p>Name: ${data.name}</p>
+                <p>Reg No: ${data.reg_no}</p>
+                <p>Place: ${data.place}</p>
+                <p>Phone No: ${data.phone_no}</p>
+                <p>Reason: ${data.reason}</p>
+                <p>Date of Leaving: ${data.date_of_leaving}</p>
+                <p>Scheduled Date of Return: ${data.scheduled_date_of_return}</p>
+                <p>Actual Date of Return: ${data.actual_date_of_return}</p>
+                <p>Time of Leaving: ${data.time_of_leaving}</p>
+                <p>Time of Return: ${data.time_of_return}</p>
+                <p>Room Number: ${data.room_number}</p>
+                <p>Block: ${data.block}</p>
+                <p>Credit: ${data.credit}</p>
+            `;
+        }
+    }
+
+    async function updateDetails(updateType) {
+        const regNoInput = document.getElementById("regNoInput").value;
+        const response = await fetch(`/api/students?reg_no=${regNoInput}`);
+        const data = await response.json();
+
+        if (data.error) {
+            alert(data.error);
+        } else {
+            // Check if credit is greater than zero before allowing check-out
+            if (updateType === "check_out" && data.credit === 0) {
+                alert("You can't check-out because your credits are over.");
+                return;
+            }
+
+            // Fields to update
+            const updateFields = {
+                "reg_no": regNoInput,
+                "update_type": updateType,
+            };
+
+            // Update the details in the backend (Flask)
+    const updateResponse = await fetch('/api/students/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams(updateFields),
+    });
+
+    const updateData = await updateResponse.json();
+
+    // Display success or error message
+    const updateMessage = document.getElementById("updateMessage");
+    if (updateData.message) {
+        updateMessage.innerHTML = updateData.message;
+    }
+
+    // Update the displayed credit value
+    const studentDetails = document.getElementById("studentDetails");
+    studentDetails.innerHTML = `
+        <!-- Existing details -->
+        <p>Your Credit has been deducted</p>
+    `;
+    }
+    }
+</script>
+
+    
+</body>
+</html>
+
+
